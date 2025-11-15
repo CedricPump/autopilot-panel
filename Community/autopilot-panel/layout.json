@@ -1,0 +1,54 @@
+{
+  "content": [
+    {
+      "path": "html_ui/icons/toolbar/ICON_TOOLBAR_AUTOPILOT_PANEL.svg",
+      "size": 1863,
+      "date": 134076918316129114
+    },
+    {
+      "path": "html_ui/InGamePanels/autopilot-panel/MyPanel.css",
+      "size": 6912,
+      "date": 134076949511413957
+    },
+    {
+      "path": "html_ui/InGamePanels/autopilot-panel/MyPanel.html",
+      "size": 6313,
+      "date": 134076876767435615
+    },
+    {
+      "path": "html_ui/InGamePanels/autopilot-panel/MyPanel.js",
+      "size": 19618,
+      "date": 134076937321074637
+    },
+    {
+      "path": "html_ui/InGamePanels/autopilot-panel/fonts/digital-7.eot",
+      "size": 34618,
+      "date": 134076797284736730
+    },
+    {
+      "path": "html_ui/InGamePanels/autopilot-panel/fonts/digital-7.ttf",
+      "size": 34404,
+      "date": 134076797284791132
+    },
+    {
+      "path": "html_ui/InGamePanels/autopilot-panel/fonts/digital-7.woff2",
+      "size": 6884,
+      "date": 134076495417578584
+    },
+    {
+      "path": "html_ui/InGamePanels/autopilot-panel/fonts/Web Fonts Demo.html",
+      "size": 5131,
+      "date": 134076798455058112
+    },
+    {
+      "path": "html_ui/Textures/Menu/Toolbar/ICON_TOOLBAR_AUTOPILOT_PANEL.svg",
+      "size": 1863,
+      "date": 134076918316129114
+    },
+    {
+      "path": "InGamePanels/autopilot-panel.spb",
+      "size": 686,
+      "date": 134076931046964113
+    }
+  ]
+}
