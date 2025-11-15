@@ -1,9 +1,9 @@
 {
   "content": [
     {
-      "path": "html_ui/icons/toolbar/ICON_TOOLBAR_AUTOPILOT_PANEL.svg",
-      "size": 1863,
-      "date": 134076918316129114
+      "path": "html_ui/icons/toolbar/ICON_TOOLBAR_AUTOPILOT.svg",
+      "size": 1873,
+      "date": 134076982900571699
     },
     {
       "path": "html_ui/InGamePanels/autopilot-panel/MyPanel.css",
@@ -41,14 +41,14 @@
       "date": 134076798455058112
     },
     {
-      "path": "html_ui/Textures/Menu/Toolbar/ICON_TOOLBAR_AUTOPILOT_PANEL.svg",
-      "size": 1863,
-      "date": 134076918316129114
+      "path": "html_ui/Textures/Menu/Toolbar/ICON_TOOLBAR_AUTOPILOT.svg",
+      "size": 1873,
+      "date": 134076982900571699
     },
     {
       "path": "InGamePanels/autopilot-panel.spb",
-      "size": 686,
-      "date": 134076931046964113
+      "size": 676,
+      "date": 134076981995115053
     }
   ]
 }
