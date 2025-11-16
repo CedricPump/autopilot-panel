@@ -8,6 +8,20 @@ class MyPanel extends TemplateElement {
         this.apTextLabel = null;
         this.autopilotMaster = false;
 
+        this.buttonStateMap = [
+            { button: "btnAP",      state: () => this.autopilotMaster },
+            { button: "btnALTsel",  state: () => this.altStepModifier },
+            { button: "btnHDG",     state: () => this.isHeadingHold },
+            { button: "btnALT",     state: () => this.isAltitudeHold },
+            { button: "btnNAV",     state: () => this.isNavActive },
+            { button: "btnAPR",     state: () => this.APRHold },
+            { button: "btnVS",      state: () => this.isVSHold },
+            { button: "btnIAS",     state: () => this.isFLCActive },
+            { button: "btnLVL",     state: () => this.wingsLevelActive },
+            { button: "btnROL",     state: () => this.isRollHold },
+        ];
+
+
         this.initialize();
     }
 
@@ -45,7 +59,7 @@ class MyPanel extends TemplateElement {
     // ---
     this.btnVSinc = this.querySelector('#btnVSinc');
     if (this.btnVSinc) this.btnVSinc.addEventListener("click", () => this.onVSincClicked());
-    this.btnVSinc.addEventListener("wheel", (event) => {
+    if (this.btnVSinc) this.btnVSinc.addEventListener("wheel", (event) => {
         this.log(String(event.deltaY));
         if (event.deltaY < 0) this.onVSincClicked(); else this.onVSdecClicked();
     });
@@ -55,10 +69,21 @@ class MyPanel extends TemplateElement {
         this.log(String(event.deltaY));
         if (event.deltaY < 0) this.onVSincClicked(); else this.onVSdecClicked();
     });
+    // IAS
     this.btnIAS = this.querySelector('#btnIAS');
     if (this.btnIAS) this.btnIAS.addEventListener("click", () => this.onIASClicked());
+    if (this.btnIAS) this.btnIAS.addEventListener("wheel", (event) => {
+        this.log(String(event.deltaY));
+        if (event.deltaY < 0) this.onVSincClicked(); else this.onVSdecClicked();
+    });
+    // VS
     this.btnVS = this.querySelector('#btnVS');
     if (this.btnVS) this.btnVS.addEventListener("click", () => this.onVSClicked());
+    if (this.btnVS) this.btnVS.addEventListener("wheel", (event) => {
+        this.log(String(event.deltaY));
+        if (event.deltaY < 0) this.onVSincClicked(); else this.onVSdecClicked();
+    });
+
     this.btnALT = this.querySelector('#btnALT');
     if (this.btnALT) this.btnALT.addEventListener("click", () => this.onALTClicked());
     /* support both btnVNAV (HTML) and btnVNV (older/typo names) */
@@ -187,6 +212,7 @@ class MyPanel extends TemplateElement {
         this.getStates();
         this.setAPPanelText();
         this.updateHDGIndicator();
+        this.updateButtonStates();
 
         // Hide debug log if debug flag is false
         if (!this.debug && this.txtDebugLog) {
@@ -199,6 +225,24 @@ class MyPanel extends TemplateElement {
             this.txtDebugLogLabel.style.display = "?";
         }
     }
+
+    updateButtonStates() {
+        if (!this.buttonStateMap) return;
+
+        for (const entry of this.buttonStateMap) {
+            const btn = this[entry.button];
+            if (!btn) continue;
+
+            const active = !!entry.state();
+
+            if (active) {
+                btn.setAttribute("activated", "true");
+            } else {
+                btn.removeAttribute("activated");
+            }
+        }
+    }
+
 
     updateHDGIndicator() {
         this.btnHDGBug.title = `${Math.round(this.selectedHeadingBug)}`;
@@ -229,11 +273,12 @@ class MyPanel extends TemplateElement {
         const fmt = (num, width = 6) =>
             `${Math.round(num)}`.padStart(width, PAD_CHAR);
 
-        let line1 = "";
-        let line2 = "";
+        let line1 = " ";
+        let line2 = " ";
 
         if (this.autopilotMaster) {
-
+            line1 = "";
+            line2 = "";
             // ===== LINE 1 =====
             line1 += "AP".padEnd(COL_AP, PAD_CHAR);
             // -- Lat MODE --
@@ -307,6 +352,7 @@ class MyPanel extends TemplateElement {
         this.selectedHeadingBug = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degrees");
         // LVL / ROL
         this.isRollHold = SimVar.GetSimVarValue("AUTOPILOT BANK HOLD", "Bool") > 0;
+        this.wingsLevelActive = SimVar.GetSimVarValue("AUTOPILOT WING LEVELER", "Bool") > 0;
         // VS
         this.isVSHold = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD", "Bool") > 0;
         this.selectedVS = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD VAR", "feet per minute");
@@ -349,7 +395,9 @@ class MyPanel extends TemplateElement {
 
     // right side
     onHDGClicked() {
+        let lastHeading = this.selectedHeadingBug;
         SimVar.SetSimVarValue("K:AP_HDG_HOLD", "bool", true);
+        SimVar.SetSimVarValue("K:HEADING_BUG_SET", "degrees", lastHeading);
         this.log("HDG button pressed");
     }
 
@@ -410,7 +458,7 @@ class MyPanel extends TemplateElement {
     onIASClicked() {
         // SimVar.SetSimVarValue("K:AP_IAS_HOLD", "Bool", 1);
         SimVar.SetSimVarValue("K:FLIGHT_LEVEL_CHANGE", "Bool", 1);
-        if(this.selectedIAS < 30) this.selectedIAS = this.currentAirspeed;
+        this.selectedIAS = this.currentAirspeed;
         this.SetSimVarValue("AUTOPILOT AIRSPEED LOCK VAR", "knots", this.selectedIAS);
         this.log("IAS button pressed");
     }
