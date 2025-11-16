@@ -84,11 +84,8 @@ class MyPanel extends TemplateElement {
         this.btnALTsel.addEventListener("click", (ev) => this.onALTselClicked(ev));
 
         // Right click: toggle step size
-        this.btnALTsel.addEventListener("contextmenu", (event) => {
-            event.preventDefault(); // Prevent context menu from showing
-            this.altStepModifier = !this.altStepModifier;
-            this.log(`ALT Modifier toggled: ${this.altStepModifier ? '1000 ft' : '100 ft'}`);
-            this.updateAltSelIndicator(); // Optional UI feedback
+        this.btnALTsel.addEventListener("contextmenu", (ev) => {
+            this.log("btnALTsel contextmenu");
         });
 
         // Use wheel for altitude adjustment
@@ -239,11 +236,11 @@ class MyPanel extends TemplateElement {
 
             // ===== LINE 1 =====
             line1 += "AP".padEnd(COL_AP, PAD_CHAR);
-
+            // -- Lat MODE --
             if (this.wingsLevelActive)
                 line1 += "LVL".padEnd(COL_MODE, PAD_CHAR);
-            else if (this.APRHold && this.IsLocalizerHold)
-                line1 += "LOC".padEnd(COL_MODE, PAD_CHAR);
+            else if (this.APRHold && this.APRActive)
+                line1 += (this.IsLocalizerHold ? "LOC" : "APR").padEnd(COL_MODE, PAD_CHAR);
             else if (this.isNavActive)
                 line1 += "NAV".padEnd(COL_MODE, PAD_CHAR);
             else if (this.isHeadingHold)
@@ -252,34 +249,42 @@ class MyPanel extends TemplateElement {
                 line1 += "ROL".padEnd(COL_MODE, PAD_CHAR);
             else
                 line1 += "".padEnd(COL_MODE, PAD_CHAR);
-
-            if (this.wingsLevelActive)
-                line1 += "LVL".padEnd(COL_ALT, PAD_CHAR);
-            else if (this.GSHold)
+            // -- ALT (vert Mode) --
+            // if (this.wingsLevelActive)
+            //     line1 += "LVL".padEnd(COL_ALT, PAD_CHAR);
+            if (this.GSHold && this.GSActive)
                 line1 += "GS".padEnd(COL_ALT, PAD_CHAR);
+            else if (this.isFLCActive)
+                line1 += ("FLC").padEnd(COL_ALT, PAD_CHAR)
+            else if (this.isVSHold) 
+                line1 += ("VS").padEnd(COL_ALT, PAD_CHAR)
             else if (this.isAltitudeHold || this.isAltitudeArmed)
                 line1 += "ALT".padEnd(COL_ALT, PAD_CHAR);
             else
                 line1 += "".padEnd(COL_ALT, PAD_CHAR);
-
+            // -- NUM --
             line1 += `${fmt(this.selecterdAltitude)} ft `.padEnd(COL_NUM, PAD_CHAR);
 
             // ===== LINE 2 =====
             line2 += "".padEnd(COL_AP, PAD_CHAR);
-
-            if (this.APRArmed && !this.APRHold)
+            // -- Lat MODE --
+            if (this.APRActive)
                 line2 += (this.IsLocalizerHold ? "LOC" : "APR").padEnd(COL_MODE, PAD_CHAR);
             else
                 line2 += "".padEnd(COL_MODE, PAD_CHAR);
-
-            if (this.isFLCActive)
-                line2 += ("FLC").padEnd(COL_ALT, PAD_CHAR) + `${fmt(this.selectedIAS)} kt `.padEnd(COL_NUM, PAD_CHAR);
-            else if (this.isVSHold)
-                line2 += ("VS").padEnd(COL_ALT, PAD_CHAR) + `${fmt(this.selectedVS)} fpm`.padEnd(COL_NUM, PAD_CHAR);
-            else if (this.GSArmed && !this.GSHold)
+            // -- ALT --
+            if (this.GSHold && !this.GSActive)
                 line2 += "GS".padEnd(COL_ALT + 1, PAD_CHAR);
+            else if ((this.isFLCActive || this.isVSHold) && this.isAltitudeArmed)
+                line2 += ("ALT").padEnd(COL_ALT, PAD_CHAR);
             else
-                line2 += "".padEnd(COL_ALT + 1 + 6, PAD_CHAR);
+                line2 += "".padEnd(COL_ALT, PAD_CHAR);
+            // -- NUM --
+            if (this.isFLCActive)
+                line2 += `${fmt(this.selectedIAS)} kt `.padEnd(COL_NUM, PAD_CHAR);
+            else if (this.isVSHold)
+                line2 += `${fmt(this.selectedVS)} fpm`.padEnd(COL_NUM, PAD_CHAR);
+
         }
 
         this.writePanelText(line1 + "<br>" + line2);
@@ -289,28 +294,37 @@ class MyPanel extends TemplateElement {
 
     // --- SIMVAR COLLECTION ---
     getStates() {
+        // AP
         this.autopilotMaster = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") > 0;
+        // ALT
         this.currentAltitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
         this.selecterdAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR", "feet");
-        this.currentHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degrees");
-        this.selectedHeadingBug = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degrees");
-        this.selectedVS = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD VAR", "feet per minute");
-        this.currentAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
-        this.selectedIAS = SimVar.GetSimVarValue("AUTOPILOT AIRSPEED HOLD VAR", "knots");
         this.isAltitudeHold = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK", "Bool") > 0;
         this.isAltitudeArmed = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE ARM", "Bool") > 0;
-        this.isNavActive = SimVar.GetSimVarValue("AUTOPILOT NAV1 LOCK", "Bool") > 0;
-        this.isFLCActive = SimVar.GetSimVarValue("AUTOPILOT FLIGHT LEVEL CHANGE", "Bool") > 0;
+        // HDG
         this.isHeadingHold = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK", "Bool") > 0;
+        this.currentHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degrees");
+        this.selectedHeadingBug = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degrees");
+        // LVL / ROL
         this.isRollHold = SimVar.GetSimVarValue("AUTOPILOT BANK HOLD", "Bool") > 0;
+        // VS
         this.isVSHold = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD", "Bool") > 0;
-        this.GSArmed = SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE ARM", "Bool") > 0;
-        this.GSHold = SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE HOLD", "Bool") > 0;
+        this.selectedVS = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD VAR", "feet per minute");
+        // Airspeed / IAS / FLC
+        this.currentAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
+        this.selectedIAS = SimVar.GetSimVarValue("AUTOPILOT AIRSPEED HOLD VAR", "knots");
+        this.isFLCActive = SimVar.GetSimVarValue("AUTOPILOT FLIGHT LEVEL CHANGE", "Bool") > 0;
+        // NAV
+        this.isNavActive = SimVar.GetSimVarValue("AUTOPILOT NAV1 LOCK", "Bool") > 0;
+        // APR
         this.APRArmed = SimVar.GetSimVarValue("AUTOPILOT APPROACH ARM", "Bool") > 0;
+        this.APRActive = SimVar.GetSimVarValue("AUTOPILOT APPROACH ACTIVE", "Bool") > 0;
         this.APRHold = SimVar.GetSimVarValue("AUTOPILOT APPROACH HOLD", "Bool") > 0;
         this.IsLocalizerHold = SimVar.GetSimVarValue("AUTOPILOT APPROACH IS LOCALIZER", "Bool") > 0;
-        this.wingsLevelActive = SimVar.GetSimVarValue("AUTOPILOT WING LEVELER", "Bool") > 0;
-        
+        // GS
+        this.GSArmed = SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE ARM", "Bool") > 0;
+        this.GSHold = SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE HOLD", "Bool") > 0;
+        this.GSActive = SimVar.GetSimVarValue("AUTOPILOT GLIDESLOPE ACTIVE", "Bool") > 0;  
     }
 
     // heading bug
@@ -418,18 +432,10 @@ class MyPanel extends TemplateElement {
 
     // altitude selector
     onALTselClicked(event) {
-        // sync selected altitude with current altitude
-        // if Shift is held, round to nearest 1000 feet (fast sync)
-        if (!this.currentAltitude) this.currentAltitude = 0;
-        let roundedAltitude;
-        if (event && event.shiftKey) {
-            roundedAltitude = Math.ceil(this.currentAltitude / 1000) * 1000;
-        } else {
-            roundedAltitude = Math.ceil(this.currentAltitude / 100) * 100;
-        }
-        SimVar.SetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR", "feet", roundedAltitude);
-        this.selecterdAltitude = roundedAltitude;
-        this.log(`ALT sel synced to current altitude ${this.selecterdAltitude} (shift=${event && event.shiftKey})`);
+
+        this.altStepModifier = !this.altStepModifier;
+        this.log(`ALT Modifier toggled: ${this.altStepModifier ? '1000 ft' : '100 ft'}`);
+        this.updateAltSelIndicator(); // Optional UI feedback
     }
     onALTselInc(step = 100) { 
         // SimVar.SetSimVarValue("K:AP_ALT_VAR_INC", "number", 0);

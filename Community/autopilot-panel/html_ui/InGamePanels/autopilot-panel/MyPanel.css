@@ -187,6 +187,10 @@
     pointer-events: none;
 }
 
-#btnAltSel.active {
+#my-panel #MainDisplay new-push-button#btnAltSel.active {
     background: linear-gradient(#707070, #303030);
+}
+
+#my-panel #MainDisplay new-push-button#btnLVL.cust-panel-btn {
+        border: 4px solid rgb(37, 106, 255);
 }
