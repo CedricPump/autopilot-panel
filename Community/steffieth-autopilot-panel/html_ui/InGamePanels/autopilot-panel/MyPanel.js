@@ -90,15 +90,15 @@ class MyPanel extends TemplateElement {
     this.btnVNV = this.querySelector('#btnVNAV') || this.querySelector('#btnVNV');
     if (this.btnVNV) this.btnVNV.addEventListener("click", () => this.onVNVClicked());
 
-        this.btnHDGBug = this.querySelector('#btnHDGSel') || this.querySelector('#btnHDGBug');
-        if (this.btnHDGBug) {
-            this.btnHDGBug.addEventListener("click", () => this.onHDGBugClicked());
-            // handle wheel for heading adjustment
-            this.btnHDGBug.addEventListener("wheel", (event) => {
-                this.log(String(event.deltaY));
-                if (event.deltaY < 0) this.onHDGBugInc(); else this.onHDGBugDec();
-            });
-        }
+    this.btnHDGBug = this.querySelector('#btnHDGSel') || this.querySelector('#btnHDGBug');
+    if (this.btnHDGBug) {
+        this.btnHDGBug.addEventListener("click", () => this.onHDGBugClicked());
+        // handle wheel for heading adjustment
+        this.btnHDGBug.addEventListener("wheel", (event) => {
+            this.log(String(event.deltaY));
+            if (event.deltaY < 0) this.onHDGBugInc(); else this.onHDGBugDec();
+        });
+    }
 
     this.btnALTsel = this.querySelector('#btnAltSel') || this.querySelector('#btnALTsel');
     if (this.btnALTsel) {
@@ -125,8 +125,15 @@ class MyPanel extends TemplateElement {
         });
     }
 
-    this.btnBNK = this.querySelector('#btnBNK');
-    if (this.btnBNK) this.btnBNK.addEventListener("click", () => this.onBNKselClicked());
+    this.btnROL = this.querySelector('#btnROL');
+    if (this.btnROL) {
+        this.btnROL.addEventListener("click", () => this.onROLselClicked());
+        this.btnHDGBug.addEventListener("wheel", (event) => {
+            this.log(String(event.deltaY));
+            if (event.deltaY < 0) this.onROLInc(); else this.onROLDec();
+        });
+    }
+
 
     this.btnALTinc = this.querySelector('#btnALTinc');
     if (this.btnALTinc) this.btnALTinc.addEventListener("click", (ev) => this.onALTselInc(ev && ev.shiftKey ? 1000 : 100));
@@ -138,39 +145,39 @@ class MyPanel extends TemplateElement {
     this.btnHDGdec = this.querySelector('#btnHDGdec');
     if (this.btnHDGdec) this.btnHDGdec.addEventListener("click", () => this.onHDGBugDec());
 
-        this.txtDebugLog = this.querySelector('#txtDebugLog');
-        this.txtDebugLogLabel = this.querySelector('#debug-log-label');
-        this.apTextLabel = this.querySelector('#ap-text-label');
+    this.txtDebugLog = this.querySelector('#txtDebugLog');
+    this.txtDebugLogLabel = this.querySelector('#debug-log-label');
+    this.apTextLabel = this.querySelector('#ap-text-label');
 
-            // Triple-click on ap-text-label to toggle debug mode
-            if (this.apTextLabel) {
-                let clickCount = 0;
-                let clickTimer = null;
-                this.apTextLabel.addEventListener('click', () => {
-                    clickCount++;
-                    if (clickCount === 1) {
-                        // Start a timer; reset after 300ms of no clicks
-                        clickTimer = setTimeout(() => {
-                            clickCount = 0;
-                        }, 300);
-                    }
-                    if (clickCount === 3) {
-                        clearTimeout(clickTimer);
-                        clickCount = 0;
-                        // Toggle debug mode
-                        this.debug = !this.debug;
-                        if (this.txtDebugLog) this.txtDebugLog.style.display = this.debug ? "block" : "none";
-                        if (this.txtDebugLogLabel) this.txtDebugLogLabel.style.display = this.debug ? "block" : "none";
-                        this.log(`DEBUG MODE ${this.debug ? 'ON' : 'OFF'}`);
-                    }
-                });
+    // Triple-click on ap-text-label to toggle debug mode
+    if (this.apTextLabel) {
+        let clickCount = 0;
+        let clickTimer = null;
+        this.apTextLabel.addEventListener('click', () => {
+            clickCount++;
+            if (clickCount === 1) {
+                // Start a timer; reset after 300ms of no clicks
+                clickTimer = setTimeout(() => {
+                    clickCount = 0;
+                }, 300);
             }
+            if (clickCount === 3) {
+                clearTimeout(clickTimer);
+                clickCount = 0;
+                // Toggle debug mode
+                this.debug = !this.debug;
+                if (this.txtDebugLog) this.txtDebugLog.style.display = this.debug ? "block" : "none";
+                if (this.txtDebugLogLabel) this.txtDebugLogLabel.style.display = this.debug ? "block" : "none";
+                this.log(`DEBUG MODE ${this.debug ? 'ON' : 'OFF'}`);
+            }
+        });
+    }
 
-            // Hide debug log if debug flag is false
-            if (!this.debug && this.txtDebugLog) {
-                this.txtDebugLog.style.display = "none";
-                this.txtDebugLogLabel.style.display = "none";
-            }
+    // Hide debug log if debug flag is false
+    if (!this.debug && this.txtDebugLog) {
+        this.txtDebugLog.style.display = "none";
+        this.txtDebugLogLabel.style.display = "none";
+    }
 
         // Start telemetry loop
         setInterval(() => this.update(), 100);
@@ -246,6 +253,7 @@ class MyPanel extends TemplateElement {
 
     updateHDGIndicator() {
         this.btnHDGBug.title = `${Math.round(this.selectedHeadingBug)}`;
+        this.btnHDGBug.innerHTML = `${Math.round(this.selectedHeadingBug)}`;
 
                 // Update heading indicator rotation
         if (this.btnHDGBug) {
@@ -273,64 +281,73 @@ class MyPanel extends TemplateElement {
         const fmt = (num, width = 6) =>
             `${Math.round(num)}`.padStart(width, PAD_CHAR);
 
-        let line1 = " ";
-        let line2 = " ";
-
-        if (this.autopilotMaster) {
-            line1 = "";
-            line2 = "";
-            // ===== LINE 1 =====
-            line1 += "AP".padEnd(COL_AP, PAD_CHAR);
-            // -- Lat MODE --
-            if (this.wingsLevelActive)
-                line1 += "LVL".padEnd(COL_MODE, PAD_CHAR);
-            else if (this.APRHold && this.APRActive)
-                line1 += (this.IsLocalizerHold ? "LOC" : "APR").padEnd(COL_MODE, PAD_CHAR);
-            else if (this.isNavActive)
-                line1 += "NAV".padEnd(COL_MODE, PAD_CHAR);
-            else if (this.isHeadingHold)
-                line1 += "HDG".padEnd(COL_MODE, PAD_CHAR);
-            else if (this.isRollHold)
-                line1 += "ROL".padEnd(COL_MODE, PAD_CHAR);
-            else
-                line1 += "".padEnd(COL_MODE, PAD_CHAR);
-            // -- ALT (vert Mode) --
-            // if (this.wingsLevelActive)
-            //     line1 += "LVL".padEnd(COL_ALT, PAD_CHAR);
-            if (this.GSHold && this.GSActive)
-                line1 += "GS".padEnd(COL_ALT, PAD_CHAR);
-            else if (this.isFLCActive)
-                line1 += ("FLC").padEnd(COL_ALT, PAD_CHAR)
-            else if (this.isVSHold) 
-                line1 += ("VS").padEnd(COL_ALT, PAD_CHAR)
-            else if (this.isAltitudeHold || this.isAltitudeArmed)
-                line1 += "ALT".padEnd(COL_ALT, PAD_CHAR);
-            else
-                line1 += "".padEnd(COL_ALT, PAD_CHAR);
-            // -- NUM --
-            line1 += `${fmt(this.selecterdAltitude)} ft `.padEnd(COL_NUM, PAD_CHAR);
-
-            // ===== LINE 2 =====
-            line2 += "".padEnd(COL_AP, PAD_CHAR);
-            // -- Lat MODE --
-            if (this.APRActive)
-                line2 += (this.IsLocalizerHold ? "LOC" : "APR").padEnd(COL_MODE, PAD_CHAR);
-            else
-                line2 += "".padEnd(COL_MODE, PAD_CHAR);
-            // -- ALT --
-            if (this.GSHold && !this.GSActive)
-                line2 += "GS".padEnd(COL_ALT + 1, PAD_CHAR);
-            else if ((this.isFLCActive || this.isVSHold) && this.isAltitudeArmed)
-                line2 += ("ALT").padEnd(COL_ALT, PAD_CHAR);
-            else
-                line2 += "".padEnd(COL_ALT, PAD_CHAR);
-            // -- NUM --
-            if (this.isFLCActive)
-                line2 += `${fmt(this.selectedIAS)} kt `.padEnd(COL_NUM, PAD_CHAR);
-            else if (this.isVSHold)
-                line2 += `${fmt(this.selectedVS)} fpm`.padEnd(COL_NUM, PAD_CHAR);
-
+        if(!this.autopilotAvailable) 
+        {
+            this.writePanelText("Unavailable<br> ");
+            return;
         }
+
+        if(!this.autopilotMaster) 
+        {
+            this.writePanelText("Off<br> ");
+            return;
+        }
+
+        let line1 = "";
+        let line2 = "";
+
+        // ===== LINE 1 =====
+        line1 += "AP".padEnd(COL_AP, PAD_CHAR);
+        // -- Lat MODE --
+        if (this.wingsLevelActive)
+            line1 += "LVL".padEnd(COL_MODE, PAD_CHAR);
+        else if (this.APRHold && this.APRActive)
+            line1 += (this.IsLocalizerHold ? "LOC" : "APR").padEnd(COL_MODE, PAD_CHAR);
+        else if (this.isNavActive)
+            line1 += "NAV".padEnd(COL_MODE, PAD_CHAR);
+        else if (this.isHeadingHold)
+            line1 += "HDG".padEnd(COL_MODE, PAD_CHAR);
+        else if (this.isRollHold)
+            line1 += "ROL".padEnd(COL_MODE, PAD_CHAR);
+        else
+            line1 += "".padEnd(COL_MODE, PAD_CHAR);
+        // -- ALT (vert Mode) --
+        // if (this.wingsLevelActive)
+        //     line1 += "LVL".padEnd(COL_ALT, PAD_CHAR);
+        if (this.GSHold && this.GSActive)
+            line1 += "GS".padEnd(COL_ALT, PAD_CHAR);
+        else if (this.isFLCActive)
+            line1 += ("FLC").padEnd(COL_ALT, PAD_CHAR)
+        else if (this.isVSHold) 
+            line1 += ("VS").padEnd(COL_ALT, PAD_CHAR)
+        else if (this.isAltitudeHold || this.isAltitudeArmed)
+            line1 += "ALT".padEnd(COL_ALT, PAD_CHAR);
+        else
+            line1 += "".padEnd(COL_ALT, PAD_CHAR);
+        // -- NUM --
+        line1 += `${fmt(this.selecterdAltitude)} ft `.padEnd(COL_NUM, PAD_CHAR);
+
+        // ===== LINE 2 =====
+        line2 += "".padEnd(COL_AP, PAD_CHAR);
+        // -- Lat MODE --
+        if (this.APRActive)
+            line2 += (this.IsLocalizerHold ? "LOC" : "APR").padEnd(COL_MODE, PAD_CHAR);
+        else
+            line2 += "".padEnd(COL_MODE, PAD_CHAR);
+        // -- ALT --
+        if (this.GSHold && !this.GSActive)
+            line2 += "GS".padEnd(COL_ALT + 1, PAD_CHAR);
+        else if ((this.isFLCActive || this.isVSHold) && this.isAltitudeArmed)
+            line2 += ("ALT").padEnd(COL_ALT, PAD_CHAR);
+        else
+            line2 += "".padEnd(COL_ALT, PAD_CHAR);
+        // -- NUM --
+        if (this.isFLCActive)
+            line2 += `${fmt(this.selectedIAS)} kt `.padEnd(COL_NUM, PAD_CHAR);
+        else if (this.isVSHold)
+            line2 += `${fmt(this.selectedVS)} fpm`.padEnd(COL_NUM, PAD_CHAR);
+
+    
 
         this.writePanelText(line1 + "<br>" + line2);
     }
@@ -341,6 +358,7 @@ class MyPanel extends TemplateElement {
     getStates() {
         // AP
         this.autopilotMaster = SimVar.GetSimVarValue("AUTOPILOT MASTER", "Bool") > 0;
+        this.autopilotAvailable = SimVar.GetSimVarValue("AUTOPILOT AVAILABLE", "Bool") > 0;
         // ALT
         this.currentAltitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
         this.selecterdAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR", "feet");
@@ -352,6 +370,7 @@ class MyPanel extends TemplateElement {
         this.selectedHeadingBug = SimVar.GetSimVarValue("AUTOPILOT HEADING LOCK DIR", "degrees");
         // LVL / ROL
         this.isRollHold = SimVar.GetSimVarValue("AUTOPILOT BANK HOLD", "Bool") > 0;
+        this.SelectRoll = SimVar.GetSimVarValue("AUTOPILOT BANK HOLD REF", "Bool") > 0;
         this.wingsLevelActive = SimVar.GetSimVarValue("AUTOPILOT WING LEVELER", "Bool") > 0;
         // VS
         this.isVSHold = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD", "Bool") > 0;
@@ -501,9 +520,21 @@ class MyPanel extends TemplateElement {
     }
 
     // bank selector
-    onBNKselClicked() {
+    onROLselClicked() {
         SimVar.SetSimVarValue("K:AP_BANK_HOLD", "Bool", 1);
         this.log("BNK Button pressed");
+    }
+
+    onROLInc() {
+        if(this.SelectRoll <= 45) return;
+        this.SelectRoll = SelectRoll++
+        SimVar.SetSimVarValue("AUTOPILOT BANK HOLD REF", "degrees", SelectRoll);
+    }
+
+    onROLDec() {
+        if(this.SelectRoll <= -45) return;
+        this.SelectRoll = SelectRoll--
+        SimVar.SetSimVarValue("AUTOPILOT BANK HOLD REF", "degrees", SelectRoll);
     }
 }
 

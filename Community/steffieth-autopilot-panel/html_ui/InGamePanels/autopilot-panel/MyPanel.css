@@ -1,26 +1,46 @@
-#my-panel #MainDisplay {
-    display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    gap: 8px; /* Optional spacing between elements */
-    padding: 8px; /* Optional padding inside panel */
-    box-sizing: border-box;
-    width: 100%;
+@font-face {
+    font-family: 'Digital-7';
+    /* Try TTF first (MSFS may prefer TTF), then woff2 as fallback.
+       Paths are absolute from html_ui/ root. */
+    src: url('/InGamePanels/autopilot-panel/fonts/digital-7.ttf') format('truetype'),
+         url('./fonts/digital-7.ttf') format('truetype'),
+         url('/InGamePanels/autopilot-panel/fonts/digital-7.woff2') format('woff2'),
+         url('./fonts/digital-7.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }
 
-/* Button group container: arrange buttons in two vertical columns beneath
-   the status label. The grid will flow items row-wise so items appear in
-   two columns (column 1 item1, column2 item2, column1 item3, ...). The
-   `.debug-group` is forced to span both columns and appear as a full-width
-   row beneath the buttons. */
-/* Controls row: left knob, center button grid, right knob */
+/* Base panel container: use flex column layout and make panel responsive */
+#my-panel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Main display area inside the panel */
+#my-panel #MainDisplay {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+/* Controls row: left knob, button grid, right knob */
 #my-panel #MainDisplay .controls-row {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 0.75rem;
+    width: 100%;
 }
 
-/* Left and right knob containers keep fixed size and do not grow */
+/* Left and right knobs: don't grow, but remain centered */
 #my-panel #MainDisplay .left-knob,
 #my-panel #MainDisplay .right-knob {
     flex: 0 0 auto;
@@ -29,150 +49,122 @@
     justify-content: center;
 }
 
-/* Center area holds the grid of buttons arranged into two rows */
+/* Center area: grows to fill space between knobs */
 #my-panel #MainDisplay .center-buttons {
+    flex: 1 1 auto;
+    width: 100%;
+}
+
+/* Two-row grid for center buttons: each row is a 7-column grid, buttons stretch to fill */
+#my-panel #MainDisplay .center-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 100%;
+}
+#my-panel #MainDisplay .center-buttons .cust-panel-btn-group {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+}
+
+/* Each button occupies full available cell in the grid */
+#my-panel #MainDisplay .cust-panel-btn-parent {
+    display: flex;
     flex: 1 1 auto;
 }
 
-#my-panel #MainDisplay .center-buttons .cust-panel-btn-group {
-    display: grid;
-    grid-auto-flow: column; /* fill column-wise so we get two rows */
-    grid-template-rows: repeat(2, auto);
-    grid-auto-columns: max-content;
-    gap: 8px 12px;
-    align-items: start;
+/* Responsive button styles for clickable divs */
+/* Panel button base style */
+#my-panel #MainDisplay .panel-btn {
+    flex: 1 1 auto;
+    min-width: 20px;
+    min-height: 34px;
+    padding: 0.3rem 0.5rem;
+    font-size: clamp(0.65rem, 1.5vw, 1rem);
+    border-radius: 3px;
+    box-sizing: border-box;
+    color: white;
+    background: linear-gradient(#555555, #181818);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    user-select: none;
+    border: 4px solid #222;
+}
+#my-panel #MainDisplay .panel-btn:hover {
+    background: linear-gradient(#707070, #303030);
+    border-color: #888;
+    color: #fff;
+}
+#my-panel #MainDisplay .panel-btn:active {
+    background: linear-gradient(#707070, #303030);
+    color: green;
 }
 
-/* Each button parent stays fixed-size */
-#my-panel #MainDisplay .cust-panel-btn-parent {
-    display: inline-flex;
+/* Knob styles for clickable divs */
+#my-panel #MainDisplay .panel-btn#btnHDGSel,
+#my-panel #MainDisplay .panel-btn#btnAltSel {
+    width: 80px;
+    height: 80px;
+    min-width: 80px;
+    min-height: 80px;
+    padding: 0.5rem;
+    border-radius: 50%;
+    border: 4px solid rgba(0,0,0,0.6);
+    background: linear-gradient(#555555, #181818);
+    flex: none;
+    font-size: clamp(0.6rem, 1.25vw, 0.9rem);
+    display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    width: auto;
-    margin: 0;
 }
 
-/* Debug log container takes full width beneath the controls row */
+/* Debug log container spans full width below the controls */
 #my-panel #MainDisplay .debug-group {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-top: 8px;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
 }
 
-/* Make the custom push-button compact like an autopilot control */
-#my-panel #MainDisplay new-push-button.cust-panel-btn,
-#my-panel #MainDisplay .cust-panel-btn-parent new-push-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 70px;            /* compact square-ish button */
-    height: 30px;
-    min-width: 60px;
-    min-height: 30px;
-    padding: 2px 2px;
-    margin: 5px 1px;
-    font-size: smaller;     /* slightly smaller label text */
-    box-sizing: border-box;
-    border-radius: 3px;
-    background: linear-gradient(#555555, #181818);
-}
-
-/* Keep inputs and textarea full width where appropriate (debug log) */
+/* Inputs and text areas are full width */
 #my-panel #MainDisplay textarea,
 #my-panel #MainDisplay input {
-    width: 100%; /* Stretch to full width for text inputs */
+    width: 100%;
     box-sizing: border-box;
+    font-size: clamp(0.7rem, 1.2vw, 1rem);
 }
 
-/* Labels: left-align the autopilot status label and debug label */
+/* Labels: left aligned with smaller text */
 #my-panel #MainDisplay label {
-    margin-bottom: 4px; /* Space between label and field */
-    font-size: 0.9em; /* Optional smaller label text */
+    margin-bottom: 0.25rem;
+    font-size: clamp(0.7rem, 1vw, 0.9rem);
     text-align: left;
 }
 
-/* 7-segment / fixed-width display for the AP status.  
-   To get an authentic KAP-140 look, drop a 7-segment-style font into
-   the `fonts/` folder next to this CSS (suggested names below). Example:
-     Community/autopilot-panel/html_ui/InGamePanels/autopilot-panel/fonts/digital-7.woff2
-
-   Recommended fonts (not bundled here):
-   - "Digital-7" (commonly distributed as Digital-7.ttf/woff)
-   - "DS-Digital" (popular 7-seg style font)
-
-   This rule will use the local font if present, otherwise fall back to
-   a monospaced system font. `white-space: pre` preserves spacing so the
-   fixed-width columns line up; `font-variant-numeric: tabular-nums`
-   helps numbers use fixed-width digits.
-*/
-
-@font-face {
-    font-family: 'Digital-7';
-    /* Try TTF first (MSFS may prefer TTF), then woff2 as fallback.
-       Paths are absolute from html_ui/ root. */
-    src: url('/InGamePanels/autopilot-panel/fonts/digital-7.ttf') format('truetype'),
-         url('/InGamePanels/autopilot-panel/fonts/digital-7.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
+/* 7-segment style display */
 #my-panel #MainDisplay #ap-text-label {
     width: 100%;
-    text-align: left;
-    min-width: 100%;
     min-height: 80px;
-    /* Prefer embedded Digital-7 if loaded, fallback to Consolas (built-in MSFS),
-       then Courier New, then system monospace */
-    font-family: Consolas, 'Courier New', 'Digital-7',  monospace;
-    font-weight: 700;
-    font-size: 38px;           /* adjust if you want larger/smaller digits */
-    box-sizing: border-box;
-    line-height: 1.2;
-    white-space: pre;          /* preserve spacing for monospaced columns */
+    height: 80px;
+    font-family: 'Digital-7', Consolas, 'Courier New',  monospace;
+    font-weight: bold;
+    font-size: xx-large;
+    line-height: 1.1;
+    white-space: pre;
     color: palevioletred;
     border: 5px solid rgba(0,0,0,0.6);
     background: #181818;
-    font-variant-numeric: tabular-nums; /* prefer fixed-width numerals */
-    letter-spacing: 0.02em;    /* slight spacing tweak for readability */
-}
-
-/* Knob style: make elements with id `btnHDGSel` circular and larger to resemble
-   a rotating knob. There are two occurrences of this id in the HTML; the selector
-   will apply to both. Knob diameter chosen as double the push-button width (44px -> 88px). */
-/* Knob selectors: apply same large circular style to both HDG BUG and ALT SEL knobs */
-#my-panel #MainDisplay new-push-button#btnHDGSel.cust-panel-btn,
-#my-panel #MainDisplay new-push-button#btnAltSel.cust-panel-btn,
-#my-panel #MainDisplay .cust-panel-btn-parent new-push-button#btnHDGSel,
-#my-panel #MainDisplay .cust-panel-btn-parent new-push-button#btnAltSel {
-    width: 80px;            /* double the standard push-button width */
-    height: 80px;           /* make it square so border-radius:50% yields a circle */
-    min-width: 80px;
-    min-height: 80px;
-    padding: 6px;
-    margin: 2px 2px;
-    font-size: smaller;
-    border-radius: 50%;     /* circle */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    font-variant-numeric: tabular-nums;
     box-sizing: border-box;
-    border: 6px solid rgba(0,0,0,0.6);
-    background: linear-gradient(#555555, #181818);
-    text-align: center;
 }
 
-/* Slight visual tweak so the larger knob doesn't push other controls out of alignment */
-#my-panel #MainDisplay .cust-panel-btn-parent {
-    vertical-align: middle;
-}
-
-/* -------------------------------------------------------------------------- */
-/* MSFS template buttons render natively; fallback styles removed. */
-
+/* Optional fake HDG indicator pointer */
 #my-panel #MainDisplay .hdg-indicator {
     position: absolute;
     width: 0;
@@ -187,42 +179,23 @@
     pointer-events: none;
 }
 
-#my-panel #MainDisplay new-push-button#btnAltSel.active {
+/* Dynamic appearance styles */
+#my-panel #MainDisplay .panel-btn[activated="true"].panel-btn {
+    /*background: linear-gradient(#707070, #303030);*/
+    /*border: 2px solid green !important;*/
+    color: lightgreen;
+}
+
+#my-panel #MainDisplay .panel-btn#btnLVL.panel-btn {
+    border: 3px solid rgb(37, 106, 255);
+}
+
+#my-panel #MainDisplay .panel-btn#btnAltSel.active {
     background: linear-gradient(#707070, #303030);
 }
 
-#my-panel #MainDisplay new-push-button[activated="true"].cust-panel-btn {
-    background: linear-gradient(#707070, #303030);
-    border: 2px solid green !important;
-    color: green
-}
-
-
-#my-panel #MainDisplay new-push-button#btnLVL.cust-panel-btn {
-        border: 4px solid rgb(37, 106, 255);
-}
-
-#my-panel-frame {
-    display: inline-block !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    height: 100%;
-    max-height: 100%;
-}
-
-#MainDisplay {
-    flex: 1 1 auto; /* allow shrinking */
-    height: auto;   /* optional */
-    overflow: hidden; /* avoids scrollbars fighting the resize UI */
-    padding-bottom: 3;
-}
-
+/* Credits and small labels */
 #my-panel #MainDisplay .creditline {
     font-size: xx-small;
-}
-
-.cust-panel-btn-group {
-    grid-template-columns: repeat(5, max-content) !important;
-    grid-auto-flow: unset;
-    grid-auto-columns: unset;
+    text-align: right;
 }
