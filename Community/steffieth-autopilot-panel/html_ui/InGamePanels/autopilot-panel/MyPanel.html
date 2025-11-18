@@ -38,53 +38,49 @@
             panel-id="{project-id}" 
             class="ingameUiFrame panelInvisible" 
             title="{project-title}" 
-            content-fit="true" 
-            min-width="50"
-            min-height="50">
+            content-fit="false" 
+            min-width="30"
+            min-height="10">
+            <section id="MainDisplay">
+                <label id="ap-text-label">AP    HDG     ALT     45000 ft  <br>      LOC     GS      15000 fpm</label>
 
-            <!-- REQUIRED: the missing container -->
-            <panel-content>
-                <section id="MainDisplay">
-                    <label id="ap-text-label">AP    HDG     ALT     45000 ft  <br>      LOC     GS      15000 fpm</label>
-
-                    <div class="controls-row">
-                        <div class="left-knob">
-                            <div class="cust-panel-btn-parent" style="position: relative;">
-                                <div id="btnHDGSel" class="panel-btn" title="HDG"></div>
-                                <div id="hdg-indicator" class="hdg-indicator"></div>
-                            </div>
-                        </div>
-
-                        <div class="center-buttons">
-                            <div class="cust-panel-btn-group row1">
-                                <div class="cust-panel-btn-parent"><div id="btnHDG" class="panel-btn" title="HDG">HDG</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnAPR" class="panel-btn" title="APR">APR</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnAP" class="panel-btn" title="AP" activated="true">AP</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnFD" class="panel-btn" title="FD">FD</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnVSinc" class="panel-btn" title="up">up</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnIAS" class="panel-btn" title="IAS">IAS</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnALT" class="panel-btn" title="ALT">ALT</div></div>
-                            </div>
-                            <div class="cust-panel-btn-group row2">
-                                <div class="cust-panel-btn-parent"><div id="btnNAV" class="panel-btn" title="NAV">NAV</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnROL" class="panel-btn" title="ROL">ROL</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnLVL" class="panel-btn" title="LVL">LVL</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnYD" class="panel-btn" title="YD">YD</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnVSdec" class="panel-btn" title="dn">dn</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnVS" class="panel-btn" title="VS">VS</div></div>
-                                <div class="cust-panel-btn-parent"><div id="btnVNAV" class="panel-btn" title="VNV">VNV</div></div>
-                            </div>
-                        </div>
-
-                        <div class="right-knob">
-                            <div class="cust-panel-btn-parent">
-                                <div id="btnAltSel" class="panel-btn" title="ALT SEL"></div>
-                            </div>
+                <div class="controls-row">
+                    <div class="left-knob">
+                        <div class="cust-panel-btn-parent" style="position: relative;">
+                            <div id="btnHDGSel" class="panel-btn" title="HDG"></div>
+                            <div id="hdg-indicator" class="hdg-indicator"></div>
                         </div>
                     </div>
-                    <div class="creditline">Fonts made from <a href="http://www.onlinewebfonts.com">Web Fonts</a> is licensed by CC BY 4.0</div>
-                </section>
-            </panel-content>
+
+                    <div class="center-buttons">
+                        <div class="cust-panel-btn-group row1">
+                            <div class="cust-panel-btn-parent"><div id="btnHDG" class="panel-btn" title="HDG">HDG</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnAPR" class="panel-btn" title="APR">APR</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnAP" class="panel-btn" title="AP" activated="true">AP</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnFD" class="panel-btn" title="FD">FD</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnVSinc" class="panel-btn" title="up">up</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnIAS" class="panel-btn" title="IAS">IAS</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnALT" class="panel-btn" title="ALT">ALT</div></div>
+                        </div>
+                        <div class="cust-panel-btn-group row2">
+                            <div class="cust-panel-btn-parent"><div id="btnNAV" class="panel-btn" title="NAV">NAV</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnROL" class="panel-btn" title="ROL">ROL</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnLVL" class="panel-btn" title="LVL">LVL</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnYD" class="panel-btn" title="YD">YD</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnVSdec" class="panel-btn" title="dn">dn</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnVS" class="panel-btn" title="VS">VS</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnVNAV" class="panel-btn" title="VNV">VNV</div></div>
+                        </div>
+                    </div>
+
+                    <div class="right-knob">
+                        <div class="cust-panel-btn-parent">
+                            <div id="btnAltSel" class="panel-btn" title="ALT SEL"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="creditline">Fonts made from <a href="http://www.onlinewebfonts.com">Web Fonts</a> is licensed by CC BY 4.0</div>
+            </section>
         </ingame-ui>
     </my-panel>
 </body>

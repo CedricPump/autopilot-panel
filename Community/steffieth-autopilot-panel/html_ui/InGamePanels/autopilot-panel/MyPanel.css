@@ -1,7 +1,31 @@
+/* === Layout Root: Fill all available space === */
+html, body, #my-panel, ingame-ui, #MainDisplay {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* === Main Panel Container === */
+#my-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* === Main Display Area === */
+#MainDisplay {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: #181818; /* Panel background */
+    border: 2px solid gray; /* Panel border */
+    box-sizing: border-box;
+}
+/* === 7-segment font for AP label === */
 @font-face {
     font-family: 'Digital-7';
-    /* Try TTF first (MSFS may prefer TTF), then woff2 as fallback.
-       Paths are absolute from html_ui/ root. */
     src: url('/InGamePanels/autopilot-panel/fonts/digital-7.ttf') format('truetype'),
          url('./fonts/digital-7.ttf') format('truetype'),
          url('/InGamePanels/autopilot-panel/fonts/digital-7.woff2') format('woff2'),
@@ -20,6 +44,30 @@
 }
 
 /* Main display area inside the panel */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#my-panel {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+#my-panel ingame-ui,
+#my-panel panel-content {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
 #my-panel #MainDisplay {
     display: flex;
     flex-direction: column;
@@ -28,11 +76,12 @@
     box-sizing: border-box;
     width: 100%;
     height: 100%;
+    min-height: 0;
     flex: 1 1 auto;
     overflow: hidden;
 }
 
-/* Controls row: left knob, button grid, right knob */
+/* === Controls Row: Knobs and Button Grid === */
 #my-panel #MainDisplay .controls-row {
     display: flex;
     align-items: flex-start;
@@ -41,6 +90,7 @@
 }
 
 /* Left and right knobs: don't grow, but remain centered */
+/* === Knob Containers: Fixed size, centered === */
 #my-panel #MainDisplay .left-knob,
 #my-panel #MainDisplay .right-knob {
     flex: 0 0 auto;
@@ -50,9 +100,13 @@
 }
 
 /* Center area: grows to fill space between knobs */
+/* === Center Buttons: Fills space between knobs === */
 #my-panel #MainDisplay .center-buttons {
     flex: 1 1 auto;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
 }
 
 /* Two-row grid for center buttons: each row is a 7-column grid, buttons stretch to fill */
@@ -62,6 +116,7 @@
     gap: 0.4rem;
     width: 100%;
 }
+/* === Button Grid: 7 columns per row === */
 #my-panel #MainDisplay .center-buttons .cust-panel-btn-group {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -70,13 +125,13 @@
 }
 
 /* Each button occupies full available cell in the grid */
+/* === Button Parent: Fills grid cell === */
 #my-panel #MainDisplay .cust-panel-btn-parent {
     display: flex;
     flex: 1 1 auto;
 }
 
-/* Responsive button styles for clickable divs */
-/* Panel button base style */
+/* === Panel Button Styles === */
 #my-panel #MainDisplay .panel-btn {
     flex: 1 1 auto;
     min-width: 20px;
@@ -105,7 +160,7 @@
     color: green;
 }
 
-/* Knob styles for clickable divs */
+/* === Knob Styles: Circular for HDG/ALT selectors === */
 #my-panel #MainDisplay .panel-btn#btnHDGSel,
 #my-panel #MainDisplay .panel-btn#btnAltSel {
     width: 80px;
@@ -123,7 +178,7 @@
     justify-content: center;
 }
 
-/* Debug log container spans full width below the controls */
+/* === Debug Log Group: Full width below controls === */
 #my-panel #MainDisplay .debug-group {
     width: 100%;
     display: flex;
@@ -132,7 +187,7 @@
     margin-top: 0.5rem;
 }
 
-/* Inputs and text areas are full width */
+/* === Inputs/Textareas: Full width === */
 #my-panel #MainDisplay textarea,
 #my-panel #MainDisplay input {
     width: 100%;
@@ -140,14 +195,14 @@
     font-size: clamp(0.7rem, 1.2vw, 1rem);
 }
 
-/* Labels: left aligned with smaller text */
+/* === Labels: Left aligned, small === */
 #my-panel #MainDisplay label {
     margin-bottom: 0.25rem;
     font-size: clamp(0.7rem, 1vw, 0.9rem);
     text-align: left;
 }
 
-/* 7-segment style display */
+/* === AP Text Label: 7-segment look === */
 #my-panel #MainDisplay #ap-text-label {
     width: 100%;
     min-height: 80px;
@@ -164,7 +219,7 @@
     box-sizing: border-box;
 }
 
-/* Optional fake HDG indicator pointer */
+/* === HDG Indicator Pointer (triangle) === */
 #my-panel #MainDisplay .hdg-indicator {
     position: absolute;
     width: 0;
@@ -179,23 +234,20 @@
     pointer-events: none;
 }
 
-/* Dynamic appearance styles */
+/* === Dynamic Button Styles === */
 #my-panel #MainDisplay .panel-btn[activated="true"].panel-btn {
-    /*background: linear-gradient(#707070, #303030);*/
-    /*border: 2px solid green !important;*/
     color: lightgreen;
 }
-
 #my-panel #MainDisplay .panel-btn#btnLVL.panel-btn {
     border: 3px solid rgb(37, 106, 255);
 }
-
 #my-panel #MainDisplay .panel-btn#btnAltSel.active {
     background: linear-gradient(#707070, #303030);
 }
 
-/* Credits and small labels */
+/* === Credits and Small Labels === */
 #my-panel #MainDisplay .creditline {
     font-size: xx-small;
     text-align: right;
 }
+
