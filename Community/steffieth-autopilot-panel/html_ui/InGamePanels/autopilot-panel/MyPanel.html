@@ -42,12 +42,12 @@
             min-width="30"
             min-height="10">
             <section id="MainDisplay">
-                <label id="ap-text-label">AP    HDG     ALT     45000 ft  <br>      LOC     GS      15000 fpm</label>
+                <label id="ap-text-label">Initializing...<br/> </label>
 
                 <div class="controls-row">
                     <div class="left-knob">
                         <div class="cust-panel-btn-parent" style="position: relative;">
-                            <div id="btnHDGSel" class="panel-btn" title="HDG"></div>
+                            <div id="btnHDGBug" class="panel-btn" title="HDG"></div>
                             <div id="hdg-indicator" class="hdg-indicator"></div>
                         </div>
                     </div>
@@ -69,17 +69,23 @@
                             <div class="cust-panel-btn-parent"><div id="btnYD" class="panel-btn" title="YD">YD</div></div>
                             <div class="cust-panel-btn-parent"><div id="btnVSdec" class="panel-btn" title="dn">dn</div></div>
                             <div class="cust-panel-btn-parent"><div id="btnVS" class="panel-btn" title="VS">VS</div></div>
-                            <div class="cust-panel-btn-parent"><div id="btnVNAV" class="panel-btn" title="VNV">VNV</div></div>
+                            <div class="cust-panel-btn-parent"><div id="btnVNV" class="panel-btn" title="VNV">VNV</div></div>
                         </div>
                     </div>
 
                     <div class="right-knob">
                         <div class="cust-panel-btn-parent">
-                            <div id="btnAltSel" class="panel-btn" title="ALT SEL"></div>
+                            <div id="btnALTSel" class="panel-btn" title="ALT SEL"></div>
                         </div>
                     </div>
                 </div>
-                <div class="creditline">Fonts made from <a href="http://www.onlinewebfonts.com">Web Fonts</a> is licensed by CC BY 4.0</div>
+                <div class="debug-group">
+                    <label id="debug-log-label" for="debug-log">Debug Log:</label>
+                    <textarea id="txt-debug-log">debug</textarea>
+                </div>
+                <div class="btn-experimental">custom autopilot (experimental)</div>
+                <div class="btn-controls">controls</div>
+                <div class="creditline">v1.0.7            © 2025 Cedric Pump            Fonts made from onlinewebfonts.com is licensed by CC BY 4.0</div>
             </section>
         </ingame-ui>
     </my-panel>

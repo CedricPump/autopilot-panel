@@ -161,8 +161,8 @@ html, body {
 }
 
 /* === Knob Styles: Circular for HDG/ALT selectors === */
-#my-panel #MainDisplay .panel-btn#btnHDGSel,
-#my-panel #MainDisplay .panel-btn#btnAltSel {
+#my-panel #MainDisplay .panel-btn#btnHDGBug,
+#my-panel #MainDisplay .panel-btn#btnALTSel {
     width: 80px;
     height: 80px;
     min-width: 80px;
@@ -238,16 +238,41 @@ html, body {
 #my-panel #MainDisplay .panel-btn[activated="true"].panel-btn {
     color: lightgreen;
 }
+
+/* === Dynamic Button Styles === */
+#my-panel #MainDisplay .panel-btn[disabled="true"].panel-btn {
+    color:black;
+    background: #181818;
+}
+
 #my-panel #MainDisplay .panel-btn#btnLVL.panel-btn {
     border: 3px solid rgb(37, 106, 255);
 }
-#my-panel #MainDisplay .panel-btn#btnAltSel.active {
+#my-panel #MainDisplay .panel-btn#btnALTSel.active {
     background: linear-gradient(#707070, #303030);
 }
 
 /* === Credits and Small Labels === */
-#my-panel #MainDisplay .creditline {
+#my-panel #MainDisplay .btn-experimental {
+    width: 100%;
     font-size: xx-small;
+    white-space: pre;
+    text-align: left;
+}
+
+/* === Credits and Small Labels === */
+#my-panel #MainDisplay .btn-controls {
+    width: 100%;
+    font-size: xx-small;
+    white-space: pre;
+    text-align: left;
+}
+
+/* === Credits and Small Labels === */
+#my-panel #MainDisplay .creditline {
+    width: 100%;
+    font-size: xx-small;
+    white-space: pre;
     text-align: right;
 }
 
