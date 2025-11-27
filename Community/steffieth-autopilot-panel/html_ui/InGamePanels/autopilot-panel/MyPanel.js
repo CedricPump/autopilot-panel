@@ -16,13 +16,19 @@ class MyPanel extends TemplateElement {
         this.vsKp = 0.00011;
         this.vsKi = 0.0;
         this.vsKd = 0.00027;
+        this.pitchKp = 0.095;
+        this.pitchKi = 0.0;
+        this.pitchKd = 0.009;
         this._bankIntegral = 0;
         this._bankLastError = 0;
         this._vsIntegral = 0;
         this._vsLastError = 0;
+        this._pitchIntegral = 0;
+        this._pitchLastError = 0;
         this._lastTime = null;
         this.targetBank = 0;
         this.targetVS = 0;
+        this.targetPitch
         this.apTextLabel = null;
         this.debugEnabled = true;
         this.txtDebugLog = null;
@@ -32,8 +38,9 @@ class MyPanel extends TemplateElement {
 
         // init selcetion states
         this.selectedHeadingBug = 0;
-        this.selectedVS = 0;
+        this.SelectedVS = 0;
         this.SelectedRoll = 0;
+        this.SelectedPitch = 0;
         this.selecterdAltitude = 0;
 
         this.buttonStateMap = [
@@ -43,7 +50,7 @@ class MyPanel extends TemplateElement {
             { button: "btnALT", state: () => this.isAltitudeHold },
             { button: "btnNAV", state: () => this.isNavActive },
             { button: "btnAPR", state: () => this.APRHold },
-            { button: "btnVS", state: () => this.isVSHold },
+            { button: "btnVS", state: () => this.isVSHold || this.isPITHold },
             { button: "btnIAS", state: () => this.isFLCActive },
             { button: "btnLVL", state: () => this.wingsLevelActive },
             { button: "btnROL", state: () => this.isRollHold },
@@ -269,7 +276,7 @@ class MyPanel extends TemplateElement {
         let res = { elevator: 0, aileron: 0 };
         let elevatorTrimPercent = 0;
         let aileronTrimPercent = 0;
-        res = this.fallbackCalculate(this.CurrentRoll, this.CurrentVS);
+        res = this.fallbackCalculate(this.CurrentRoll, this.CurrentVS, this.CurrentPitch);
         elevatorTrimPercent = Math.round(res.elevator * 100);
         aileronTrimPercent = Math.round(res.aileron * 100);
         this.log(`Fallback control output VS: ${this.isVSHold}, ROL: ${this.isRollHold}\n  aileron: ${aileronTrimPercent}, elevator: ${elevatorTrimPercent}\n  roll: ${this.CurrentRoll.toFixed(4)}, vs: ${this.CurrentVS.toFixed(4)} fpm`);
@@ -278,7 +285,7 @@ class MyPanel extends TemplateElement {
             if (this.isRollHold) {
                 SimVar.SetSimVarValue("AILERON POSITION", "Position", res.aileron);
             }
-            if (this.isVSHold) {
+            if (this.isVSHold || this.isPITHold) {
                 SimVar.SetSimVarValue("ELEVATOR POSITION", "Position", res.elevator);
             }
         }
@@ -286,7 +293,7 @@ class MyPanel extends TemplateElement {
             if (this.isRollHold) {
                 SimVar.SetSimVarValue("AILERON TRIM PCT", "	Percent Over 100", res.aileron);
             }
-            if (this.isVSHold) {
+            if (this.isVSHold || this.isPITHold) {
                 SimVar.SetSimVarValue("ELEVATOR TRIM POSITION", "Radians", res.elevator * 0.44);
             }
         }
@@ -294,14 +301,14 @@ class MyPanel extends TemplateElement {
             if (this.isRollHold) {
                 SimVar.SetSimVarValue("RUDDER TRIM PCT", "Percent Over 100", res.aileron);
             }
-            if (this.isVSHold) {
+            if (this.isVSHold || this.isPITHold) {
                 SimVar.SetSimVarValue("ELEVATOR TRIM PCT", "Percent Over 100", res.elevator);
             }
         }
 
     }
 
-    fallbackCalculate(currentBank, currentVS) {
+    fallbackCalculate(currentBank, currentVS, currentPitch) {
         let elevator = 0;
         let aileron = 0;
         // return { elevator, aileron };
@@ -331,17 +338,15 @@ class MyPanel extends TemplateElement {
                 elevator = Math.max(-1, Math.min(1, elevator));
             } else if (this.isPITHold) {
                 // --- PITCH ➜ Elevator ---
-                this.pitchKd = this.vsKd;
-                this.pitchKi = this.vsKi;
-                this.pitchKp = this.vsKp;
-                const pitchError = this.selectedPitch - this.currentPitch;
+                const pitchError = this.targetPitch - currentPitch;
                 this._pitchIntegral += pitchError * dt;
                 const pitchDerivative = (pitchError - this._pitchLastError) / dt;
                 this._pitchLastError = pitchError;
                 elevator = (this.pitchKp * pitchError) + (this.pitchKi * this._pitchIntegral) + (this.pitchKd * pitchDerivative);
-                elevator = Math.max(-1, Math.min(1, elevator));
+                elevator = -Math.max(-1, Math.min(1, elevator));
             }
         } catch (e) {
+            this.autopilotMaster = false;
             this.log(`Error in fallbackCalculate: ${e}`, "ERROR");
         }
         return { elevator: elevator, aileron: -aileron };
@@ -408,7 +413,7 @@ class MyPanel extends TemplateElement {
             const hdgIndicator = document.getElementById('hdg-indicator');
             if (hdgIndicator) {
                 // Calculate relative heading: how many degrees the bug is ahead of current heading
-                let relativeHeading = this.selectedHeadingBug - this.currentHeading;
+                let relativeHeading = this.selectedHeadingBug - this.CurrentHeading;
                 // Handle 360-degree wrap-around
                 while (relativeHeading > 180) relativeHeading -= 360;
                 while (relativeHeading < -180) relativeHeading += 360;
@@ -447,9 +452,9 @@ class MyPanel extends TemplateElement {
             if (this.isRollHold)
                 line2 += "ROL " + fmt2(-this.SelectedRoll, 4).padEnd(8, PAD_CHAR);
             if (this.isVSHold)
-                line2 += "   VS" + fmt(this.selectedVS, 5);
+                line2 += "   VS" + fmt(this.SelectedVS, 5);
             if (this.isPITHold)
-                line2 += "  PIT" + fmt2(this.selectedPitch, 5);
+                line2 += "  PIT" + fmt2(this.SelectedPitch, 5);
 
             this.writePanelText(line1 + "<br>" + line2);
             return;
@@ -512,7 +517,7 @@ class MyPanel extends TemplateElement {
         if (this.isFLCActive)
             line2 += `${fmt(this.selectedIAS)} kt `.padEnd(COL_NUM, PAD_CHAR);
         else if (this.isVSHold)
-            line2 += `${fmt(this.selectedVS)} fpm`.padEnd(COL_NUM, PAD_CHAR);
+            line2 += `${fmt(this.SelectedVS)} fpm`.padEnd(COL_NUM, PAD_CHAR);
 
 
 
@@ -529,10 +534,10 @@ class MyPanel extends TemplateElement {
             // this.log(`Autopilot Available: ${this.autopilotAvailable}`);
             this.CurrentRoll = SimVar.GetSimVarValue("PLANE BANK DEGREES", "degrees");
             this.CurrentVS = SimVar.GetSimVarValue("VERTICAL SPEED", "feet per minute");
-            this.currentHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degrees");
-            this.currentAltitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
-            this.currentAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
-            this.currentPitch = SimVar.GetSimVarValue("PLANE PITCH DEGREES", "degrees");
+            this.CurrentHeading = SimVar.GetSimVarValue("PLANE HEADING DEGREES MAGNETIC", "degrees");
+            this.CurrentAltitude = SimVar.GetSimVarValue("PLANE ALTITUDE", "feet");
+            this.CurrentAirspeed = SimVar.GetSimVarValue("AIRSPEED INDICATED", "knots");
+            this.CurrentPitch = SimVar.GetSimVarValue("PLANE PITCH DEGREES", "degrees");
 
             if (this.useCustomAutopilotLogic) {
                 // do not overwrite states if using custom autopilot logic
@@ -552,7 +557,7 @@ class MyPanel extends TemplateElement {
             this.wingsLevelActive = SimVar.GetSimVarValue("AUTOPILOT WING LEVELER", "Bool") > 0;
             // VS
             this.isVSHold = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD", "Bool") > 0;
-            this.selectedVS = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD VAR", "feet per minute");
+            this.SelectedVS = SimVar.GetSimVarValue("AUTOPILOT VERTICAL HOLD VAR", "feet per minute");
 
             // Airspeed / IAS / FLC
             this.selectedIAS = SimVar.GetSimVarValue("AUTOPILOT AIRSPEED HOLD VAR", "knots");
@@ -578,9 +583,9 @@ class MyPanel extends TemplateElement {
     // heading bug
     onHDGBugClicked() {
         // sync heading bug with current heading
-        SimVar.SetSimVarValue("K:HEADING_BUG_SET", "degrees", this.currentHeading);
-        this.selectedHeadingBug = this.currentHeading;
-        this.log(`HDG Bug synced to current heading: ${this.currentHeading}`);
+        SimVar.SetSimVarValue("K:HEADING_BUG_SET", "degrees", this.CurrentHeading);
+        this.selectedHeadingBug = this.CurrentHeading;
+        this.log(`HDG Bug synced to current heading: ${this.CurrentHeading}`);
     }
     onHDGBugInc() {
         // SimVar.SetSimVarValue("K:HEADING_BUG_INC", "number", 0);
@@ -630,14 +635,14 @@ class MyPanel extends TemplateElement {
         SimVar.SetSimVarValue("K:AP_WING_LEVELER", "Bool", 1);
         SimVar.SetSimVarValue("K:AP_PITCH_LEVELER", "Bool", 1);
         if (this.useCustomAutopilotLogic) {
-            this.selectedVS = 0;
-            this.selectedPitch = 0;
+            this.SelectedVS = 0;
+            this.SelectedPitch = 0;
             this.SelectedRoll = 0;
             this.fallbackSetTargetBank(0, true);
             this.fallbackSetTargetVS(0, true);
             this.isRollHold = true;
-            this.isVSHold = true;
-            this.isPITHold = false;
+            this.isVSHold = false;
+            this.isPITHold = true;
         }
         this.log("LVL button pressed");
     }
@@ -657,28 +662,44 @@ class MyPanel extends TemplateElement {
     onIASClicked() {
         // SimVar.SetSimVarValue("K:AP_IAS_HOLD", "Bool", 1);
         SimVar.SetSimVarValue("K:FLIGHT_LEVEL_CHANGE", "Bool", 1);
-        this.selectedIAS = this.currentAirspeed;
+        this.selectedIAS = this.CurrentAirspeed;
         this.SetSimVarValue("AUTOPILOT AIRSPEED LOCK VAR", "knots", this.selectedIAS);
         this.log("IAS button pressed");
     }
 
     onVSClicked() {
-        this.isVSHold = !this.isVSHold;
+        if (!this.useCustomAutopilotLogic) {
+            this.isVSHold = !this.isVSHold;
+            SimVar.SetSimVarValue("K:AP_VS_HOLD", "Bool", 1);
+            this.log("VS button pressed");
+            return;
+        }
 
-        if (this.autopilotMaster && !this.isVSHold) {
+        // if OFF switch to PIT
+        if (!this.isVSHold && !this.isPITHold) {
             // switch to pitch hold
             this.isPITHold = true;
-            this.selectedPitch = Math.round(this.currentPitch);
-            this.fallbackSetTargetPitch(this.selectedPitch, true);
+            this.isVSHold = false;
+            this.SelectedPitch = Math.round(this.CurrentPitch);
+            this.fallbackSetTargetPitch(this.SelectedPitch, true);
+            return;
         }
 
-        if (this.useCustomAutopilotLogic && this.isVSHold) {
+        // if PIT switch to VS
+        if (this.isPITHold && !this.isVSHold) {
             this.isPITHold = false;
-            this.selectedVS = Math.round((this.CurrentVS) / 100) * 100;
-            this.fallbackSetTargetVS(this.selectedVS, true);
+            this.isVSHold = true;
+            this.SelectedVS = Math.round((this.CurrentVS) / 100) * 100;
+            this.fallbackSetTargetVS(this.SelectedVS, true);
+            return;
         }
-        SimVar.SetSimVarValue("K:AP_VS_HOLD", "Bool", 1);
-        this.log("VS button pressed");
+
+        // if VS switch to OFF
+        if (this.isVSHold && !this.isPITHold) {
+            this.isVSHold = false;
+            this.isPITHold = false;
+            return;
+        }
     }
 
     // left side
@@ -689,15 +710,15 @@ class MyPanel extends TemplateElement {
         if (this.isVSHold) {
             SimVar.SetSimVarValue("K:AP_VS_VAR_INC", "number", 0);
             if (this.useCustomAutopilotLogic) {
-                this.selectedVS += 100;
-                this.fallbackSetTargetVS(this.selectedVS);
+                this.SelectedVS += 100;
+                this.fallbackSetTargetVS(this.SelectedVS);
             }
         }
         if (this.isPITHold) {
-            this.selectedPitch += 1;
-            this.fallbackSetTargetPitch(this.selectedPitch);
+            this.SelectedPitch += 1;
+            this.fallbackSetTargetPitch(this.SelectedPitch);
         }
-        this.log(`VS+ button pressed: ${this.selectedVS}`);
+        this.log(`VS+ button pressed: ${this.SelectedVS}`);
     }
 
     onVSdecClicked() {
@@ -707,15 +728,15 @@ class MyPanel extends TemplateElement {
         if (this.isVSHold) {
             SimVar.SetSimVarValue("K:AP_VS_VAR_DEC", "number", 0);
             if (this.useCustomAutopilotLogic) {
-                this.selectedVS -= 100;
-                this.fallbackSetTargetVS(this.selectedVS);
+                this.SelectedVS -= 100;
+                this.fallbackSetTargetVS(this.SelectedVS);
             }
         }
         if (this.isPITHold) {
-            this.selectedPitch -= 1;
-            this.fallbackSetTargetPitch(this.selectedPitch);
+            this.SelectedPitch -= 1;
+            this.fallbackSetTargetPitch(this.SelectedPitch);
         }
-        this.log(`VS- button pressed: ${this.selectedVS}`);
+        this.log(`VS- button pressed: ${this.SelectedVS}`);
     }
 
     onALTClicked() {
@@ -737,14 +758,14 @@ class MyPanel extends TemplateElement {
     }
     onALTselInc(step = 100) {
         // SimVar.SetSimVarValue("K:AP_ALT_VAR_INC", "number", 0);
-        if (!this.currentAltitude) this.currentAltitude = 0;
+        if (!this.CurrentAltitude) this.CurrentAltitude = 0;
         SimVar.SetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR", "feet", this.selecterdAltitude + step);
         this.selecterdAltitude += step
         this.log(`ALT+ ${this.selecterdAltitude}`);
     }
     onALTselDec(step = 100) {
         // SimVar.SetSimVarValue("K:AP_ALT_VAR_DEC", "number", 0);
-        if (!this.currentAltitude) this.currentAltitude = 0;
+        if (!this.CurrentAltitude) this.CurrentAltitude = 0;
         SimVar.SetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR", "feet", this.selecterdAltitude - step);
         this.selecterdAltitude -= step;
         this.log(`ALT- ${this.selecterdAltitude}`);
@@ -811,6 +832,7 @@ class MyPanel extends TemplateElement {
         this._vsLastError = 0;
         this.targetBank = 0;
         this.targetVS = 0;
+        this.targetPitch = 0;
     }
     fallbackSetTargetBank(val, reset = false) {
         if (this.targetBank !== val) {
@@ -834,8 +856,8 @@ class MyPanel extends TemplateElement {
     fallbackSetTargetPitch(val, reset = false) {
         if (this.targetPitch !== val) {
             if (reset) {
-                this._vsIntegral = 0;
-                this._vsLastError = 0;
+                this._pitchIntegral = 0;
+                this._pitchLastError = 0;
             }
             this.targetPitch = val;
         }
